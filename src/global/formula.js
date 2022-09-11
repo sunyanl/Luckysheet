@@ -840,7 +840,7 @@ const luckysheetformula = {
         let currSelection = window.getSelection();
         let anchor = $(currSelection.anchorNode);
         let anchorOffset = currSelection.anchorOffset;
-
+        
         if (anchor.parent().is("span") && anchorOffset != 0) {
             let txt = $.trim(anchor.text()),
                 lasttxt = "";
@@ -1702,7 +1702,7 @@ const luckysheetformula = {
         }
 
         let reg_cell = /^(([a-zA-Z]+)|([$][a-zA-Z]+))(([0-9]+)|([$][0-9]+))$/g; //增加正则判断单元格为字母+数字的格式：如 A1:B3
-        let reg_cellRange = /^(((([a-zA-Z]+)|([$][a-zA-Z]+))(([0-9]+)|([$][0-9]+)))|((([a-zA-Z]+)|([$][a-zA-Z]+))))$/g; //增加正则判断单元格为字母+数字或字母的格式：如 A1:B3，A:A
+        let reg_cellRange = /^(((([a-zA-Z]+)|([$][a-zA-Z]+))(([0-9]+)|([$][0-9]+)))|((([a-zA-Z]+)|([$][a-zA-Z]+)))|((([0-9]+)|([$][0-9]+))))$/g; //增加正则判断单元格为字母+数字或字母的格式：如 A1:B3，A:A
 
         if (rangetxt.indexOf(":") == -1) {
             let row = parseInt(rangetxt.replace(/[^0-9]/g, "")) - 1;
@@ -1722,7 +1722,7 @@ const luckysheetformula = {
             }
         }
         else {
-            reg_cellRange = /^(((([a-zA-Z]+)|([$][a-zA-Z]+))(([0-9]+)|([$][0-9]+)))|((([a-zA-Z]+)|([$][a-zA-Z]+)))|((([0-9]+)|([$][0-9]+s))))$/g;
+            reg_cellRange = /^(((([a-zA-Z]+)|([$][a-zA-Z]+))(([0-9]+)|([$][0-9]+)))|((([a-zA-Z]+)|([$][a-zA-Z]+)))|((([0-9]+)|([$][0-9]+))))$/g;
 
             rangetxt = rangetxt.split(":");
 
@@ -1919,18 +1919,38 @@ const luckysheetformula = {
         return ret;
     },
     setfreezonFuceExe: function (rangetxt) {
+        // modify to change fixing from A1 -> $A$1 -> A$1 -> $A1 for cells, A -> $A for columns, 1 -> $1 for rows
         let row = parseInt(rangetxt.replace(/[^0-9]/g, ""));
         let col = ABCatNum(rangetxt.replace(/[^A-Za-z]/g, ""));
         let $row = "$",
             $col = "$";
 
         if (!isNaN(row) && !isNaN(col)) {
+            // cell
+            let testStr = rangetxt.replace(/[^$A-Za-z]/g,"");
+            if (testStr.startsWith("$") && testStr.endsWith("$")) {
+                $row = "";
+            } else if (testStr.startsWith("$")) {
+                $col = "";
+            } else if (testStr.endsWith("$")) {
+                $col = "";
+                $row = "";
+            }
+
             return $col + chatatABC(col) + $row + (row);
         }
         else if (!isNaN(row)) {
+            // row
+            if (rangetxt.includes("$")) {
+                $row = "";
+            }
             return $row + (row);
         }
         else if (!isNaN(col)) {
+            // column
+            if (rangetxt.includes("$")) {
+                $col = "";
+            }
             return $col + chatatABC(col);
         }
         else {
@@ -1941,6 +1961,7 @@ const luckysheetformula = {
         let _this = this;
 
         let obj = _this.getrangeseleciton();
+
         if (!_this.iscelldata(obj.text())) {
             return;
         }
@@ -1953,6 +1974,7 @@ const luckysheetformula = {
         if (val.length > 1) {
             rangetxt = val[1];
             prefix = val[0] + "!";
+            pos -= prefix.length;
         }
         else {
             rangetxt = val[0];
@@ -1982,7 +2004,18 @@ const luckysheetformula = {
             }
         }
 
-        obj.text(prefix + newtxt);
+        obj.text(newtxt);
+
+        // copy any modifications to both locations
+        if(obj.is("#luckysheet-rich-text-editor") || obj.parent().is("#luckysheet-rich-text-editor")) {
+            // if inline editor
+            $("#luckysheet-functionbox-cell").html($("#luckysheet-rich-text-editor").html());
+        } else {
+            // if top editor
+            $("#luckysheet-rich-text-editor").html($("#luckysheet-functionbox-cell").html());            
+        }
+
+
         _this.setCaretPosition(obj.get(0), 0, newpos);
     },
     updateparam: function (orient, txt, step) {

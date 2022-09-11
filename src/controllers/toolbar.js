@@ -11,6 +11,7 @@ export const defaultToolbar = [
     '|',
 
     'currencyFormat',
+    'commaFormat',
     'percentageFormat',
     'numberIncrease',
     'numberDecrease',
@@ -65,6 +66,7 @@ export const toolbarIdMap = {
     redo: '#luckysheet-icon-redo',
     paintFormat: ['#luckysheet-icon-paintformat'], //Format brush
     currencyFormat: '#luckysheet-icon-currency', //currency format
+    commaFormat: '#luckysheet-icon-comma',
     percentageFormat: '#luckysheet-icon-percent', //Percentage format
     numberDecrease: '#luckysheet-icon-fmt-decimal-decrease', //'Decrease the number of decimal places'
     numberIncrease: '#luckysheet-icon-fmt-decimal-increase', //'Increase the number of decimal places
@@ -155,9 +157,19 @@ export function createToolbarHtml() {
                 <div class="luckysheet-toolbar-button-inner-box luckysheet-inline-block"
                 style="user-select: none;">
                     <div class="luckysheet-icon luckysheet-inline-block " style="user-select: none;">
-                        <div aria-hidden="true" class="luckysheet-icon-img-container luckysheet-icon-img iconfont luckysheet-iconfont-jine"
-                        style="user-select: none;">
-                        </div>
+                        <div style="font-size:14px">$</div>
+                    </div>
+                </div>
+            </div>
+        </div>`,
+        commaFormat: `<div class="luckysheet-toolbar-button luckysheet-inline-block" data-tips="${toolbar.commaFormat}"
+        id="luckysheet-icon-comma" role="button" style="user-select: none;">
+            <div class="luckysheet-toolbar-button-outer-box luckysheet-inline-block"
+            style="user-select: none;">
+                <div class="luckysheet-toolbar-button-inner-box luckysheet-inline-block"
+                style="user-select: none;">
+                    <div class="luckysheet-icon luckysheet-inline-block " style="user-select: none;">
+                        <div style="font-size:14px; padding-top:3px;">❜</div>
                     </div>
                 </div>
             </div>

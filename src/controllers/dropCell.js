@@ -2690,7 +2690,7 @@ const luckysheetDropCell = {
 
         let b;
         if(sum_n == 0){
-            b = 1;
+            b = 0; // modify from 1 to 0 so that the default behavior is not to increment if only a single value
         }
         else{
             b = sum_d / sum_n;

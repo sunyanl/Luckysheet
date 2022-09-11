@@ -8847,8 +8847,9 @@ export default {
         undo: 'Undo',
         redo: 'Redo',
         paintFormat: 'Paint format',
-        currencyFormat: 'Format as currency',
-        percentageFormat: 'Format as percent',
+        currencyFormat: 'Accounting Number Format',
+        commaFormat: 'Comma Style',
+        percentageFormat: 'Percent Style',
         numberDecrease: 'Decrease decimal places',
         numberIncrease: 'Increase decimal places',
         moreFormats:'More formats',
@@ -9149,10 +9150,10 @@ export default {
         { "text": 'Percent', "value": "#0.00%", "example": "12.21%" },
         { "text": 'Scientific', "value": "0.00E+00", "example": "1.01E+5" },
         { "text": "", "value": "split", "example": "" },
-        { "text": 'Accounting', "value": "¥(0.00)", "example": "¥(1200.09)" },
+        { "text": 'Accounting', "value": "$(0.00)", "example": "$(1200.09)" },
 
 
-        { "text": 'Currency', "value": "¥0.00", "example": "¥1200.09" },
+        { "text": 'Currency', "value": "$0.00", "example": "$1200.09" },
 
 
         { "text": "", "value": "split", "example": "" },
@@ -9209,7 +9210,7 @@ export default {
     fontFamily:{
         MicrosoftYaHei:"YaHei",
     },
-    fontarray: ["Times New Roman","Arial","Tahoma","Verdana"],
+    fontarray: ["Arial","Times New Roman","Tahoma","Verdana"],
     fontjson: {"times new roman":0,"arial":1,"tahoma":2,"verdana":3},
     border:{
         borderTop:'borderTop',
@@ -9375,7 +9376,7 @@ export default {
         confirm: 'Confirm',
         orderAZ: 'A-Z order',
         orderZA: 'Z-A order',
-        clearContent: 'Clear content',
+        clearContent: 'Clear contents',
         matrix: 'Matrix operation',
         sortSelection: 'Sort',
         filterSelection: 'Filter',

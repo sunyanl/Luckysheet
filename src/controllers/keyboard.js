@@ -3,6 +3,11 @@ import menuButton from './menuButton';
 import conditionformat from './conditionformat';
 import server from './server';
 import {luckysheetupdateCell,setCenterInputPosition} from './updateCell';
+import luckysheetDropCell from './dropCell';
+import {checkProtectionLockedRangeList} from './protection';
+import pivotTable from './pivotTable';
+
+import { getObjType } from '../utils/util';
 import { keycode } from './constant';
 import { 
     luckysheetMoveHighlightCell, 
@@ -447,6 +452,11 @@ export function keyboardInitial(){
                         $("#luckysheet-rich-text-editor").html(value);
                         luckysheetRangeLast($("#luckysheet-rich-text-editor")[0]);
                         formula.functionInputHanddler($("#luckysheet-functionbox-cell"), $("#luckysheet-rich-text-editor"), kcode);
+                    } else if (kcode == 90) { // identical to Ctrl + Y below
+                        controlHistory.undo(event);
+                        luckysheetactiveCell();
+                        event.stopPropagation();
+                        return;
                     }
                 }
                 else if (kcode == 66) {//Ctrl + B  加粗
@@ -570,6 +580,248 @@ export function keyboardInitial(){
 
                     event.stopPropagation();
                     return;
+                }
+                else if (kcode == 68 || kcode == 82) {// Ctrl + D or Ctrl + R
+                    Store.luckysheet_cell_selected_extend = false;
+                    $("#luckysheet-cell-selected-extend").hide();
+        
+                    if(!checkProtectionLockedRangeList(Store.luckysheet_select_save, Store.currentSheetIndex)){
+                        return;
+                    }
+        
+                    //copy范围
+                    let rowIndexArr = [], colIndexArr = [];
+                    let copyRange = [], RowlChange = false, HasMC = false;
+
+                    for(let s = 0; s < Store.luckysheet_select_save.length; s++){
+                        let range = Store.luckysheet_select_save[s];
+
+                        let r1 = range.row[0],
+                            r2 = range.row[1];
+                        let c1 = range.column[0],
+                            c2 = range.column[1];
+
+                        for(let copyR = r1; copyR <= r2; copyR++){
+                            if (Store.config["rowhidden"] != null && Store.config["rowhidden"][copyR] != null) {
+                                continue;
+                            }
+
+                            if(!rowIndexArr.includes(copyR)){
+                                rowIndexArr.push(copyR);
+                            }
+
+                            if (Store.config["rowlen"] != null && (copyR in Store.config["rowlen"])){
+                                RowlChange = true;
+                            }
+
+                            for(let copyC = c1; copyC <= c2; copyC++){
+                                if (Store.config["colhidden"] != null && Store.config["colhidden"][copyC] != null) {
+                                    continue;
+                                }
+
+                                if(!colIndexArr.includes(copyC)){
+                                    colIndexArr.push(copyC);
+                                }
+
+                                let cell = Store.flowdata[copyR][copyC];
+
+                                if(getObjType(cell) == "object" && ("mc" in cell) && cell.mc.rs != null){
+                                    HasMC = true;
+                                }
+                            }
+                        }
+
+                        copyRange.push({ "row": range.row, "column": range.column });
+                    }
+                    
+                    // assign index to start extending from
+                    Store.luckysheet_cell_selected_extend_index[0] = copyRange[0]["row"][0] // first row
+                    Store.luckysheet_cell_selected_extend_index[1] = copyRange[0]["column"][1] // last col
+
+                    // assign rows and columns to extrapolate from
+                    let lastc = $.extend(true, {}, Store.luckysheet_select_save[Store.luckysheet_select_save.length - 1]);
+
+                    if (kcode == 68) { // Ctrl + D
+                        lastc["row"] = [copyRange[0]["row"][0],copyRange[0]["row"][0]]; // first row
+                        lastc["column"] = copyRange[0]["column"]; // first col to last col
+                    } else { // Ctrl + R
+                        lastc["row"] = copyRange[0]["row"] // first to last row
+                        lastc["column"] = [copyRange[0]["column"][0],copyRange[0]["column"][0]] // first column
+                    }
+                    Store.luckysheet_select_save[Store.luckysheet_select_save.length - 1] = lastc;
+                   
+                    // assign index of cell to fill
+                    row_index = copyRange[0]["row"][1]; // fill to last row
+                    col_index = copyRange[0]["column"][1]; // fill to last column
+
+                    let scrollLeft = $("#luckysheet-cell-main").scrollLeft();
+                    let scrollTop = $("#luckysheet-cell-main").scrollTop();
+        
+                    // set ridiculously large numbers for mouse to indicate mouse position is to the bottom right
+                    let x, y, col_pre, row_pre = 100000;
+
+                    let winH = $(window).height() + scrollTop - Store.sheetBarHeight - Store.statisticBarHeight,
+                        winW = $(window).width() + scrollLeft;
+                    
+                    // original code from mouse up event of "Store.luckysheet_cell_selected_extend" below ---------
+
+                    let row_index_original = Store.luckysheet_cell_selected_extend_index[0],
+                        col_index_original = Store.luckysheet_cell_selected_extend_index[1];
+
+                    let last = Store.luckysheet_select_save[Store.luckysheet_select_save.length - 1];
+                    let row_s = last["row"][0], row_e = last["row"][1];
+                    let col_s = last["column"][0], col_e = last["column"][1];
+
+                    if (row_s < 0 || y < 0) {
+                        row_s = 0;
+                        row_e = last["row"][1] - last["row"][0];
+                    }
+
+                    if (col_s < 0 || x < 0) {
+                        col_s = 0;
+                        col_e = last["column"][1] - last["column"][0];
+                    }
+
+                    if (row_e >= Store.visibledatarow[Store.visibledatarow.length - 1] || y > winH) {
+                        row_s = Store.visibledatarow.length - 1 - last["row"][1] + last["row"][0];
+                        row_e = Store.visibledatarow.length - 1;
+                    }
+
+                    if (col_e >= Store.visibledatacolumn[Store.visibledatacolumn.length - 1] || x > winW) {
+                        col_s = Store.visibledatacolumn.length - 1 - last["column"][1] + last["column"][0];
+                        col_e = Store.visibledatacolumn.length - 1;
+                    }
+
+                    //复制范围
+                    luckysheetDropCell.copyRange = { "row": $.extend(true, [], last["row"]), "column": $.extend(true, [], last["column"]) };
+                    //applyType
+                    let typeItemHide = luckysheetDropCell.typeItemHide();
+
+                    if (!typeItemHide[0] && !typeItemHide[1] && !typeItemHide[2] && !typeItemHide[3] && !typeItemHide[4] && !typeItemHide[5] && !typeItemHide[6]) {
+                        luckysheetDropCell.applyType = "0";
+                    }
+                    else {
+                        luckysheetDropCell.applyType = "1";
+                    }
+
+                    if (Math.abs(row_index_original - row_index) > Math.abs(col_index_original - col_index)) {
+                        if (!(row_index >= row_s && row_index <= row_e)) {
+                            if (Store.luckysheet_select_save[0].top_move >= row_pre) {//当往上拖拽时
+                                luckysheetDropCell.applyRange = { "row": [row_index, last["row"][0] - 1], "column": last["column"] };
+                                luckysheetDropCell.direction = "up";
+
+                                row_s -= last["row"][0] - row_index;
+
+                                //是否有数据透视表范围
+                                if (pivotTable.isPivotRange(row_s, col_e)) {
+                                    tooltip.info(locale_drag.affectPivot, "");
+                                    return;
+                                }
+                            }
+                            else {//当往下拖拽时
+                                luckysheetDropCell.applyRange = { "row": [last["row"][1] + 1, row_index], "column": last["column"] };
+                                luckysheetDropCell.direction = "down";
+
+                                row_e += row_index - last["row"][1];
+
+                                //是否有数据透视表范围
+                                if (pivotTable.isPivotRange(row_e, col_e)) {
+                                    tooltip.info(locale_drag.affectPivot, "");
+                                    return;
+                                }
+                            }
+                        }
+                        else {
+                            return;
+                        }
+                    }
+                    else {
+                        if (!(col_index >= col_s && col_index <= col_e)) {
+                            if (Store.luckysheet_select_save[0].left_move >= col_pre) {//当往左拖拽时
+                                luckysheetDropCell.applyRange = { "row": last["row"], "column": [col_index, last["column"][0] - 1] };
+                                luckysheetDropCell.direction = "left";
+
+                                col_s -= last["column"][0] - col_index;
+
+                                //是否有数据透视表范围
+                                if (pivotTable.isPivotRange(row_e, col_s)) {
+                                    tooltip.info(locale_drag.affectPivot, "");
+                                    return;
+                                }
+                            }
+                            else {//当往右拖拽时
+                                luckysheetDropCell.applyRange = { "row": last["row"], "column": [last["column"][1] + 1, col_index] };
+                                luckysheetDropCell.direction = "right";
+
+                                col_e += col_index - last["column"][1];
+
+                                //是否有数据透视表范围
+                                if (pivotTable.isPivotRange(row_e, col_e)) {
+                                    tooltip.info(locale_drag.affectPivot, "");
+                                    return;
+                                }
+                            }
+                        }
+                        else {
+                            return;
+                        }
+                    }
+
+                    if (Store.config["merge"] != null) {
+                        let hasMc = false;
+
+                        for (let r = last["row"][0]; r <= last["row"][1]; r++) {
+                            for (let c = last["column"][0]; c <= last["column"][1]; c++) {
+                                let cell = Store.flowdata[r][c];
+
+                                if (cell != null && cell.mc != null) {
+                                    hasMc = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (hasMc) {
+                            if (isEditMode()) {
+                                alert(locale_drag.noMerge);
+                            }
+                            else {
+                                tooltip.info(locale_drag.noMerge, "");
+                            }
+
+                            return;
+                        }
+
+                        for (let r = row_s; r <= row_e; r++) {
+                            for (let c = col_s; c <= col_e; c++) {
+                                let cell = Store.flowdata[r][c];
+
+                                if (cell != null && cell.mc != null) {
+                                    hasMc = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (hasMc) {
+                            if (isEditMode()) {
+                                alert(locale_drag.noMerge);
+                            }
+                            else {
+                                tooltip.info(locale_drag.noMerge, "");
+                            }
+
+                            return;
+                        }
+                    }
+
+                    last["row"] = [row_s, row_e];
+                    last["column"] = [col_s, col_e];
+
+                    luckysheetDropCell.update();
+                    luckysheetDropCell.createIcon();
+
+
                 }
                 else if (kcode == 70) {//Ctrl + F  查找
                     searchReplace.createDialog(0);
