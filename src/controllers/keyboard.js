@@ -636,17 +636,18 @@ export function keyboardInitial(){
                     
                     // assign index to start extending from
                     Store.luckysheet_cell_selected_extend_index[0] = copyRange[0]["row"][0] // first row
-                    Store.luckysheet_cell_selected_extend_index[1] = copyRange[0]["column"][1] // last col
 
                     // assign rows and columns to extrapolate from
                     let lastc = $.extend(true, {}, Store.luckysheet_select_save[Store.luckysheet_select_save.length - 1]);
 
                     if (kcode == 68) { // Ctrl + D
+                        Store.luckysheet_cell_selected_extend_index[1] = copyRange[0]["column"][1]; // last col
                         lastc["row"] = [copyRange[0]["row"][0],copyRange[0]["row"][0]]; // first row
                         lastc["column"] = copyRange[0]["column"]; // first col to last col
                     } else { // Ctrl + R
+                        Store.luckysheet_cell_selected_extend_index[1] = copyRange[0]["column"][0]; // first col
                         lastc["row"] = copyRange[0]["row"] // first to last row
-                        lastc["column"] = [copyRange[0]["column"][0],copyRange[0]["column"][0]] // first column
+                        lastc["column"] = [copyRange[0]["column"][0],copyRange[0]["column"][0]] // first column                       
                     }
                     Store.luckysheet_select_save[Store.luckysheet_select_save.length - 1] = lastc;
                    
@@ -703,7 +704,7 @@ export function keyboardInitial(){
                     else {
                         luckysheetDropCell.applyType = "1";
                     }
-
+                    
                     if (Math.abs(row_index_original - row_index) > Math.abs(col_index_original - col_index)) {
                         if (!(row_index >= row_s && row_index <= row_e)) {
                             if (Store.luckysheet_select_save[0].top_move >= row_pre) {//当往上拖拽时
