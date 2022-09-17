@@ -462,6 +462,9 @@ export function keyboardInitial(){
                 else if (kcode == 66) {//Ctrl + B  加粗
                     $("#luckysheet-icon-bold").click();
                 }
+                else if (kcode == 85) {//Ctrl + U  underline
+                    $("#luckysheet-icon-underline").click();
+                }
                 else if (kcode == 67) {//Ctrl + C  复制
                     if(imageCtrl.currentImgId != null){
                         imageCtrl.copyImgItem(event);
