@@ -8861,7 +8861,7 @@ export default {
         underline: 'Underline',
         textColor: 'Text color',
         chooseColor: 'choose color',
-        resetColor: 'Reset',
+        resetColor: 'No fill',
         customColor: 'CUSTOM',
         alternatingColors: 'Alternating colors',
         confirmColor: 'OK',
