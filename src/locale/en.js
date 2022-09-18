@@ -9211,7 +9211,7 @@ export default {
         MicrosoftYaHei:"YaHei",
     },
     fontarray: ["Arial","Times New Roman","Tahoma","Verdana"],
-    fontjson: {"times new roman":0,"arial":1,"tahoma":2,"verdana":3},
+    fontjson: {"arial":0,"times new roman":1,"tahoma":2,"verdana":3},
     border:{
         borderTop:'borderTop',
         borderBottom:'borderBottom',
