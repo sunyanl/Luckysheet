@@ -1929,9 +1929,9 @@ const luckysheetformula = {
             // cell
             let testStr = rangetxt.replace(/[^$A-Za-z]/g,"");
             if (testStr.startsWith("$") && testStr.endsWith("$")) {
-                $row = "";
-            } else if (testStr.startsWith("$")) {
                 $col = "";
+            } else if (testStr.startsWith("$")) {
+                $row = "";
             } else if (testStr.endsWith("$")) {
                 $col = "";
                 $row = "";
