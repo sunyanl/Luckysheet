@@ -1450,7 +1450,7 @@ var make_ssf = function make_ssf(SSF) {
             var vInt = parseInt(v);
              
             var vlength = vInt.toString().length;
-            if( vlength> 4){
+            if(false){ // disable Chinese formatting of numbers for now
                 if(vlength > 8){
                     var y =parseInt (v / 100000000);  //亿
                     var w = parseInt(parseFloat(v).subtract(y*100000000) / 10000); //万
