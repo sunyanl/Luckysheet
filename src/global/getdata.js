@@ -243,6 +243,10 @@ export function getcellFormula(r, c, i, data) {
         return null;
     }
 
+    if(cell.f==undefined) {
+        return "=\"\"";
+    }
+
     return cell.f;
 }
 
